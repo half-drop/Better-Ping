@@ -1,7 +1,5 @@
 package com.vladmarica.betterpingdisplay.hud;
 
-import static com.vladmarica.betterpingdisplay.hud.PingColors.COLOR_MID;
-import static com.vladmarica.betterpingdisplay.hud.PingColors.COLOR_START;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -9,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link ColorUtil} */
 @RunWith(JUnit4.class)
 public class ColorUtilTest {
 
@@ -20,6 +17,9 @@ public class ColorUtilTest {
     assertEquals(0xC1, ColorUtil.getGreen(color));
     assertEquals(0x30, ColorUtil.getBlue(color));
   }
+
+  private static final int COLOR_START = 0xFF00E676;
+  private static final int COLOR_MID = 0xFFD6CD30;
 
   @Test
   public void testInterpolation_zero() {
