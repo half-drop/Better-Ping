@@ -1,6 +1,7 @@
 package com.vladmarica.betterpingdisplay.mixin;
 
 import com.vladmarica.betterpingdisplay.hud.CustomPlayerListHud;
+import com.vladmarica.betterpingdisplay.hud.PingVisibility;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
@@ -12,8 +13,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerTabOverlay.class)
 public abstract class PlayerTabOverlayMixin {
@@ -25,9 +28,19 @@ public abstract class PlayerTabOverlayMixin {
   @Final
   private Minecraft minecraft;
 
+  @Unique
+  private boolean betterpingdisplay$hidePing;
+
+  @Inject(method = "extractRenderState", at = @At("HEAD"))
+  private void betterpingdisplay$updatePingVisibility(CallbackInfo ci) {
+    var connection = minecraft.getConnection();
+    betterpingdisplay$hidePing = connection != null
+        && PingVisibility.shouldHidePing(connection.getListedOnlinePlayers(), PlayerInfo::getLatency);
+  }
+
   @ModifyConstant(method = "extractRenderState", constant = @Constant(intValue = 13))
   private int modifySlotWidthConstant(int original) {
-    return original + PLAYER_SLOT_EXTRA_WIDTH;
+    return betterpingdisplay$hidePing ? original : original + PLAYER_SLOT_EXTRA_WIDTH;
   }
 
   @Redirect(
@@ -42,6 +55,9 @@ public abstract class PlayerTabOverlayMixin {
       int xo,
       int yo,
       @NotNull PlayerInfo entry) {
-    CustomPlayerListHud.renderPingDisplay(minecraft, instance, graphics, slotWidth, xo, yo, entry);
+    // Skip the complete rendering path, including optional vanilla signal bars.
+    if (!betterpingdisplay$hidePing) {
+      CustomPlayerListHud.renderPingDisplay(minecraft, instance, graphics, slotWidth, xo, yo, entry);
+    }
   }
 }

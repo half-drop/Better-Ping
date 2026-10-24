@@ -8,6 +8,7 @@ This client-side Fabric mod replaces Minecraft's ambiguous ping bars with actual
 
 - **See Your Real Ping** - Exact millisecond values instead of vague signal bars
 - **Smart Color Coding** - Automatic color-coding based on latency (green = smooth, red = laggy)
+- **Automatic Placeholder Detection** - Hide both ping numbers and vanilla signal bars when every listed player has the same ping; restore the configured display as soon as their values differ
 - **Fully Customizable** - Adjust colors, text format, and display preferences to match your style
 - **Works Everywhere** - Client-side only, so it works on any server including vanilla
 - **Zero Bloat** - Simple, focused, and lightweight
@@ -24,9 +25,19 @@ Customize everything through `betterpingdisplay.json`:
 - Set custom text colors
 - Define your own format (e.g., `%dms`, `%d ping`)
 
+## Identical ping detection
+
+This fork automatically checks the full server-provided Tab player list each time the list is rendered. If at least two listed players all have exactly the same latency (for example, everyone shows `10000ms`), both the numeric ping and the vanilla signal bars are hidden, even when `renderPingBars` is enabled. The extra space reserved for numeric ping is also removed.
+
+Detection is recalculated from the current player list, so normal display returns automatically when a player's ping differs. Empty and single-player lists are left unchanged because there is not enough information to compare players. This is a heuristic: genuinely identical pings are also hidden.
+
+## Build
+
+The [Build workflow](../../actions/workflows/build.yml) runs on pushes, pull requests, and manual dispatches. It uses Java 25 to run `./gradlew build`, including the tests, and uploads the mod JAR with `SHA256SUMS.txt` as an Actions artifact.
+
 ## Supported Versions
 
-1.21.9+1.21.10
+Minecraft 26.3 (Fabric)
 
 **Original Mod:** [Better Ping Display - Fabric](https://modrinth.com/mod/better-ping-display-fabric)
 
