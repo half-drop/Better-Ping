@@ -31,11 +31,13 @@ public final class CustomPlayerListHud {
     int pingTextColor = cfg.shouldAutoColorPingText()
         ? PingColors.getColor(player.getLatency()) : cfg.getTextColor();
 
-    int textX = x + width - PING_BAR_OFFSET - pingStringWidth - 2;
+    boolean renderPingBars = cfg.shouldRenderPingBars();
+    int pingBarOffset = renderPingBars ? PING_BAR_OFFSET : 0;
+    int textX = x + width - pingBarOffset - pingStringWidth - 2;
 
     context.text(font, pingString, textX, y, pingTextColor, true);
 
-    if (cfg.shouldRenderPingBars()) {
+    if (renderPingBars) {
       ((PlayerTabOverlayInvoker) overlay).invokeExtractPingIcon(context, width, x, y, player);
     }
   }

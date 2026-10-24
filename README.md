@@ -25,6 +25,8 @@ Customize everything through `betterpingdisplay.json`:
 - Set custom text colors
 - Define your own format (e.g., `%dms`, `%d ping`)
 
+When `renderPingBars` is `false`, the numeric ping is right-aligned with a two-pixel margin inside each player column. Space for the vanilla signal icon is reserved only when the icon is enabled.
+
 ## Identical ping detection
 
 This fork automatically checks the full server-provided Tab player list each time the list is rendered. If at least two listed players all have exactly the same latency (for example, everyone shows `10000ms`), both the numeric ping and the vanilla signal bars are hidden, even when `renderPingBars` is enabled. The extra space reserved for numeric ping is also removed.
