@@ -1,7 +1,9 @@
 package com.vladmarica.betterpingdisplay.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.vladmarica.betterpingdisplay.hud.CustomPlayerListHud;
 import com.vladmarica.betterpingdisplay.hud.PingVisibility;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
@@ -13,10 +15,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerTabOverlay.class)
 public abstract class PlayerTabOverlayMixin {
@@ -31,11 +31,16 @@ public abstract class PlayerTabOverlayMixin {
   @Unique
   private boolean betterpingdisplay$hidePing;
 
-  @Inject(method = "extractRenderState", at = @At("HEAD"))
-  private void betterpingdisplay$updatePingVisibility(CallbackInfo ci) {
-    var connection = minecraft.getConnection();
-    betterpingdisplay$hidePing = connection != null
-        && PingVisibility.shouldHidePing(connection.getListedOnlinePlayers(), PlayerInfo::getLatency);
+  @ModifyExpressionValue(
+      method = "extractRenderState",
+      at = @At(
+          value = "INVOKE",
+          target = "Lnet/minecraft/client/gui/components/PlayerTabOverlay;getPlayerInfos()Ljava/util/List;"))
+  private List<PlayerInfo> betterpingdisplay$updatePingVisibility(List<PlayerInfo> players) {
+    // Use exactly the sorted, capped list that this frame will render. Custom
+    // layouts can keep additional real players outside the visible tab slots.
+    betterpingdisplay$hidePing = PingVisibility.shouldHidePing(players, PlayerInfo::getLatency);
+    return players;
   }
 
   @ModifyConstant(method = "extractRenderState", constant = @Constant(intValue = 13))

@@ -8,7 +8,7 @@ This client-side Fabric mod replaces Minecraft's ambiguous ping bars with actual
 
 - **See Your Real Ping** - Exact millisecond values instead of vague signal bars
 - **Smart Color Coding** - Automatic color-coding based on latency (green = smooth, red = laggy)
-- **Automatic Placeholder Detection** - Hide both ping numbers and vanilla signal bars when every listed player has the same ping; restore the configured display as soon as their values differ
+- **Automatic Placeholder Detection** - Hide both ping numbers and vanilla signal bars when displayed players share a ping or a custom Tab layout uses repeated placeholder values
 - **Fully Customizable** - Adjust colors, text format, and display preferences to match your style
 - **Works Everywhere** - Client-side only, so it works on any server including vanilla
 - **Zero Bloat** - Simple, focused, and lightweight
@@ -27,11 +27,14 @@ Customize everything through `betterpingdisplay.json`:
 
 When `renderPingBars` is `false`, the numeric ping is right-aligned with a two-pixel margin inside each player column. Space for the vanilla signal icon is reserved only when the icon is enabled.
 
-## Identical ping detection
+## Placeholder ping detection
 
-This fork automatically checks the full server-provided Tab player list each time the list is rendered. If at least two listed players all have exactly the same latency (for example, everyone shows `10000ms`), both the numeric ping and the vanilla signal bars are hidden, even when `renderPingBars` is enabled. The extra space reserved for numeric ping is also removed.
+This fork checks exactly the sorted player entries used to render the current Tab list (up to vanilla's 80-entry limit). Extra entries outside that visible list cannot prevent detection. Both numeric ping and vanilla signal bars are hidden, even when `renderPingBars` is enabled, in either of these cases:
 
-Detection is recalculated from the current player list, so normal display returns automatically when a player's ping differs. Empty and single-player lists are left unchanged because there is not enough information to compare players. This is a heuristic: genuinely identical pings are also hidden.
+- At least two displayed entries all have exactly the same latency.
+- At least eight displayed entries have exactly two distinct latency values, at least 75% use `10000ms`, and at least two remaining entries share the other value. This handles layouts mixing `10000ms` filler entries with a second fixed value such as `500ms`, without requiring every entry to match.
+
+The extra space reserved for numeric ping is also removed. Detection is recalculated each frame, and the configured display returns as soon as neither condition matches. A single differing player, or three or more distinct latencies, keeps normal display. Empty and single-player lists are left unchanged. These rules are heuristics: genuinely identical or sufficiently clustered real pings can also be hidden.
 
 ## Build
 
